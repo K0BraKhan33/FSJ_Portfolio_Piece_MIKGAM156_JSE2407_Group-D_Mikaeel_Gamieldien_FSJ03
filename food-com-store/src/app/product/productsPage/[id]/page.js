@@ -25,6 +25,9 @@ export default function ProductDetailsPage({ params }) {
   const [sortedReviews, setSortedReviews] = useState([]);
   const [sortBy, setSortBy] = useState(''); // Default to 'Choose Sort'
   const [loading, setLoading] = useState(true); // Loading state
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false); // State for review modal
+  const [newReviewRating, setNewReviewRating] = useState(0); // State for new review rating
+  const [newReviewComment, setNewReviewComment] = useState(''); // State for new review comment
 
   useEffect(() => {
     async function fetchProduct() {
@@ -104,6 +107,24 @@ export default function ProductDetailsPage({ params }) {
     setSortedReviews(sorted);
   };
 
+  const toggleReviewModal = () => {
+    setIsReviewModalOpen(!isReviewModalOpen);
+  };
+
+  const handleConfirmReview = () => {
+    if (newReviewRating < 1 || newReviewRating > 5) return; // Ensure rating is between 1 and 5
+    const newReview = {
+      reviewerName: 'Anonymous', // Placeholder for reviewer name
+      rating: newReviewRating,
+      comment: newReviewComment,
+      date: new Date().toISOString()
+    };
+    setSortedReviews((prevReviews) => [newReview, ...prevReviews]); // Add new review to the top
+    toggleReviewModal(); // Close the modal
+    setNewReviewRating(0); // Reset rating
+    setNewReviewComment(''); // Reset comment
+  };
+
   if (loading) {
     return <div className="text-center text-warm-white">Loading product details...</div>;
   }
@@ -125,7 +146,7 @@ export default function ProductDetailsPage({ params }) {
   } = product;
 
   return (
-    <div className="container mx-auto p-4 bg-[#224724] text-warm-white">
+    <div className="container mx-auto p-4 bg-[#224724] text-warm-white relative">
       <button onClick={handleBackClick} className="bg-teal-600 text-warm-white px-4 py-2 rounded mb-4 hover:bg-teal-700">
         Back to Products
       </button>
@@ -170,9 +191,7 @@ export default function ProductDetailsPage({ params }) {
                 width={3000}
                 height={3000}
                 alt={`${title} thumbnail ${idx + 1}`}
-                className={`w-16 h-16 object-cover cursor-pointer rounded border-2 ${
-                  currentImageIndex === idx ? 'border-teal-600' : 'border-transparent'
-                }`}
+                className={`w-16 h-16 object-cover cursor-pointer rounded border-2 ${currentImageIndex === idx ? 'border-teal-600' : 'border-transparent'}`}
                 onClick={() => handleThumbnailClick(idx)}
               />
             ))}
@@ -200,28 +219,70 @@ export default function ProductDetailsPage({ params }) {
                 <option value="date">Sort by Date</option>
                 <option value="rating">Sort by Rating</option>
               </select>
-              <button onClick={resetFilters} className="bg-red-600 text-warm-white px-4 py-2 rounded hover:bg-red-700">
+              <button onClick={resetFilters} className="bg-teal-600 text-warm-white px-4 py-2 rounded hover:bg-teal-700">
                 Reset
               </button>
             </div>
+
+            <button onClick={toggleReviewModal} className="bg-teal-600 text-warm-white px-4 py-2 rounded hover:bg-teal-700">
+              Add Review
+            </button>
           </div>
 
-          {/* Reviews */}
-          <div className="reviews mt-6 overflow-y-auto max-h-48 border border-gray-600 rounded p-2">
-            {sortedReviews.length > 0 ? (
+          <div className="reviews mt-4">
+            {sortedReviews.length === 0 ? (
+              <p>No reviews yet.</p>
+            ) : (
               sortedReviews.map((review, index) => (
-                <div key={index} className="border-b py-2 border-gray-600">
-                  <p className="font-semibold text-darker-orange">{review.reviewerName} (Rating: {review.rating}/5)</p>
-                  <p className="text-sm">{review.comment}</p>
-                  <p className="text-xs text-gray-400">{new Date(review.date).toLocaleDateString()}</p>
+                <div key={index} className="bg-gray-800 p-4 rounded mb-2">
+                  <p className="font-semibold">{review.reviewerName} - {new Date(review.date).toLocaleDateString()}</p>
+                  <p className="text-teal-500">Rating: {review.rating} / 5</p>
+                  <p>{review.comment}</p>
                 </div>
               ))
-            ) : (
-              <p>No reviews yet.</p>
             )}
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-[#224724] p-4 rounded shadow-lg max-w-md w-full relative" style={{ height: '90vh' }}>
+            <h2 className="text-2xl font-bold text-center mb-4">Add Your Review</h2>
+            <div className="mb-4">
+              <label htmlFor="rating" className="block text-lg">Rating (1-5):</label>
+              <input
+                type="number"
+                id="rating"
+                value={newReviewRating}
+                onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                className="w-full p-2 rounded bg-gray-800 text-warm-white"
+                min="1"
+                max="5"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="comment" className="block text-lg">Comment:</label>
+              <textarea
+                id="comment"
+                value={newReviewComment}
+                onChange={(e) => setNewReviewComment(e.target.value)}
+                className="w-full p-2 rounded bg-gray-800 text-warm-white"
+                rows="4"
+              />
+            </div>
+            <div className="flex justify-between">
+              <button onClick={toggleReviewModal} className="bg-red-600 text-warm-white px-4 py-2 rounded hover:bg-red-700">
+                Cancel
+              </button>
+              <button onClick={handleConfirmReview} className="bg-teal-600 text-warm-white px-4 py-2 rounded hover:bg-teal-700">
+                Submit Review
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
