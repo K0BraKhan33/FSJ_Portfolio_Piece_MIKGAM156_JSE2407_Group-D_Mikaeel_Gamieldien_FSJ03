@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const LoginPage = () => {
+const SignUpPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -9,14 +9,15 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle the form submission logic here
+    // Handle the sign-up logic here
     console.log({ firstName, lastName, username, email, password });
+    // You might want to call an API to create a new user
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#224724] text-warm-white">
       <div className="bg-gray-800 p-8 rounded shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">Welcome to MyApp</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">Create Your Account</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="firstName" className="block text-lg">First Name:</label>
@@ -85,4 +86,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;
