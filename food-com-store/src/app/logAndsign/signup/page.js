@@ -1,5 +1,5 @@
 // app/signup/page.js
-'use client'
+'use client';
 import React, { useState } from 'react';
 
 const SignUpPage = () => {
@@ -8,13 +8,14 @@ const SignUpPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null); // State for error messages
+  const [success, setSuccess] = useState(null); // State for success messages
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle the sign-up logic here
+
     console.log({ firstName, lastName, username, email, password });
-    
-    // Example: Send data to your API endpoint
+
     try {
       const response = await fetch('/api/signup', {
         method: 'POST',
@@ -23,16 +24,21 @@ const SignUpPage = () => {
         },
         body: JSON.stringify({ firstName, lastName, username, email, password }),
       });
-      
+
+      const data = await response.json();
+
       if (response.ok) {
-        // Handle successful sign-up (e.g., redirect, show success message)
-        console.log('User signed up successfully');
+        setSuccess(data.message);
+        setError(null); // Clear any existing errors
+        // Optionally, redirect the user or clear the form
       } else {
-        // Handle error response
-        console.error('Error signing up:', response.statusText);
+        setError(data.error);
+        setSuccess(null); // Clear any existing success messages
       }
     } catch (error) {
       console.error('Network error:', error);
+      setError('An unexpected error occurred. Please try again later.');
+      setSuccess(null); // Clear any existing success messages
     }
   };
 
@@ -103,6 +109,8 @@ const SignUpPage = () => {
             Sign Up
           </button>
         </form>
+        {error && <p className="text-red-500 mt-4">{error}</p>} {/* Display error message */}
+        {success && <p className="text-green-500 mt-4">{success}</p>} {/* Display success message */}
       </div>
     </div>
   );
