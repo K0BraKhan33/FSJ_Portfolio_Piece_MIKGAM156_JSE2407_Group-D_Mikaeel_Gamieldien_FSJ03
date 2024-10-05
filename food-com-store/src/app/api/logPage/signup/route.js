@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase'; // Adjust the import based on your Firebase setup
+import { db } from '../../../lib/firebase.js'; // Adjust the import based on your Firebase setup
 import { setDoc, doc, getDocs, collection, query, where } from 'firebase/firestore';
 import bcrypt from 'bcrypt';
 
