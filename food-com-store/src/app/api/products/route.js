@@ -1,4 +1,4 @@
-import { db } from '../../firebase.js'; // Adjust the path to your firebase.js
+import { db } from '../../lib/firebase.js'; // Adjust the path to your firebase.js
 import { collection, getDocs, query, where, limit, startAfter } from 'firebase/firestore';
 
 export async function GET(req) {

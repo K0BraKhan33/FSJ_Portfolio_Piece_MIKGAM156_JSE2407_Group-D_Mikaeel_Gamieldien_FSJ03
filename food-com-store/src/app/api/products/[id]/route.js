@@ -1,6 +1,6 @@
 // api/products/[id]/route.js
 
-import { db } from '../../../firebase.js'; // Adjust the path to your firebase.js
+import { db } from '../../../lib/firebase.js'; // Adjust the path to your firebase.js
 import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
 
 /**
