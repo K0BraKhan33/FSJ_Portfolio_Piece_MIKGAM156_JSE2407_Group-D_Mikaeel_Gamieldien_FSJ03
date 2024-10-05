@@ -1,3 +1,5 @@
+// app/signup/page.js
+'use client'
 import React, { useState } from 'react';
 
 const SignUpPage = () => {
@@ -7,11 +9,31 @@ const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle the sign-up logic here
     console.log({ firstName, lastName, username, email, password });
-    // You might want to call an API to create a new user
+    
+    // Example: Send data to your API endpoint
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ firstName, lastName, username, email, password }),
+      });
+      
+      if (response.ok) {
+        // Handle successful sign-up (e.g., redirect, show success message)
+        console.log('User signed up successfully');
+      } else {
+        // Handle error response
+        console.error('Error signing up:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+    }
   };
 
   return (
