@@ -16,7 +16,6 @@ import Head from 'next/head';
  * @param {function} props.buildQueryString - Function to build query string for product links.
  * @returns {JSX.Element} The rendered ProductList component.
  */
-
 const ProductList = ({
   products,
   selectedCategory,
@@ -52,6 +51,8 @@ const ProductList = ({
           };
           img.onerror = () => {
             console.error(`Failed to load image: ${imageSrc}`);
+            // Ensure loading state is reset if an image fails
+            setLoadingStates((prev) => ({ ...prev, [product.id]: false }));
           };
         });
       });
@@ -148,7 +149,7 @@ const ProductList = ({
                               style={{ height: '300px' }} // Adjust height as needed
                             >
                               <Image
-                                src={imageSrc}
+                                src={imageSrc || '../image-placeholder.webp'} // Fallback to placeholder if src is empty
                                 alt={product.title}
                                 className="object-contain w-full h-full rounded" // Use object-contain to maintain aspect ratio
                                 width={300}
@@ -159,8 +160,6 @@ const ProductList = ({
                                 formats={['webp']}
                                 onError={() => {
                                   console.error(`Failed to load image: ${imageSrc}`);
-                                  // Set to placeholder image if the original fails
-                                  imageSrc = '../image-placeholder.webp';
                                 }}
                               />
                             </div>
@@ -192,18 +191,19 @@ const ProductList = ({
       {/* CSS Loader for preloading images */}
       <style jsx>{`
         .loader {
-          border: 8px solid #f3f3f3;
-          justify: center;
-          border-top: 8px solid #3498db;
+          border: 4px solid rgba(255, 255, 255, 0.1);
+          border-left-color: #ffffff;
           border-radius: 50%;
-          width: 60px;
-          height: 60px;
-          animation: spin 2s linear infinite;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+          margin: 0 auto;
         }
 
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
