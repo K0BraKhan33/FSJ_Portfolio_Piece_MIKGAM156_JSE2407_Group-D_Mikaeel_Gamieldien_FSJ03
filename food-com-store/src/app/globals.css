@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 241, 235, 226; /* Light earthy tone */
+  --background-start-rgb: 37, 38, 36; /* Dark earthy tone */
+  --background-end-rgb: 114, 96, 69;   /* Medium earthy tone */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 241, 235, 226; /* Light earthy tone for dark mode */
+    --background-start-rgb: 26, 27, 25; /* Darker earthy tone for dark mode */
+    --background-end-rgb: 114, 96, 69;   /* Medium earthy tone for dark mode */
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
