@@ -71,23 +71,26 @@ export default function ProductDetailsPage({ params }) {
       return;
     }
 
+    // Ensure reviewerName is defined
+    const safeReviewerName = reviewerName || 'Anonymous';
+
     const newReview = {
-      reviewerName,
+      reviewerName: safeReviewerName,
       rating: newReviewRating,
-      comment: newReviewComment,
+      comment: newReviewComment || '',  // Fallback to empty string if undefined
       date: new Date().toISOString(),
       uid: user.uid,
     };
 
     try {
-      if (editingReview) {
+      if (editingReview && editingReview.id) {
         // Update existing review
         const reviewRef = doc(db, 'products', id, 'reviews', editingReview.id);
         await updateDoc(reviewRef, newReview);
         
         // Update the local state with the updated review
         setSortedReviews((prevReviews) => 
-          prevReviews.map((rev) => (rev.id === editingReview.id ? newReview : rev))
+          prevReviews.map((rev) => (rev.id === editingReview.id ? { ...rev, ...newReview } : rev))
         );
       } else {
         // Create a new review
@@ -242,37 +245,43 @@ export default function ProductDetailsPage({ params }) {
                 type="text"
                 value={reviewerName}
                 readOnly
-                className="mb-2 p-2 border rounded bg-gray-600 text-warm-white"
+                className="mb-2 p-2 rounded bg-gray-700 text-warm-white"
               />
               <label className="mb-2">Rating (1-5):</label>
               <input
                 type="number"
                 value={newReviewRating}
                 onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                className="mb-2 p-2 rounded bg-gray-700 text-warm-white"
                 min="1"
                 max="5"
-                className="mb-2 p-2 border rounded"
               />
               <label className="mb-2">Comment:</label>
               <textarea
                 value={newReviewComment}
                 onChange={(e) => setNewReviewComment(e.target.value)}
-                className="mb-2 p-2 border rounded"
-              ></textarea>
-              <button
-                onClick={handleConfirmReview}
-                className="bg-teal-600 text-warm-white px-4 py-2 rounded hover:bg-teal-700"
-              >
-                {editingReview ? 'Update Review' : 'Submit Review'}
-              </button>
-              <button
-                onClick={toggleReviewModal}
-                className="bg-red-600 text-white px-4 py-2 rounded mt-2 hover:bg-red-700"
-              >
-                Cancel
-              </button>
-              {notLoggedIn && <p className="text-red-500">You need to be logged in to add a review.</p>}
+                className="mb-4 p-2 rounded bg-gray-700 text-warm-white"
+              />
+              <div className="flex justify-end">
+                <button onClick={toggleReviewModal} className="bg-red-600 text-white px-4 py-2 rounded mr-2">
+                  Cancel
+                </button>
+                <button onClick={handleConfirmReview} className="bg-teal-600 text-white px-4 py-2 rounded">
+                  {editingReview ? 'Update Review' : 'Submit Review'}
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {notLoggedIn && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 p-4 rounded shadow-lg">
+            <h2 className="text-lg font-semibold">Please Log In to Add a Review</h2>
+            <button onClick={() => setNotLoggedIn(false)} className="bg-teal-600 text-white px-4 py-2 rounded mt-4">
+              Close
+            </button>
           </div>
         </div>
       )}
