@@ -1,6 +1,9 @@
-// app/signup/page.js
 'use client';
 import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase.js'; // Adjust the import based on your file structure
+import { useRouter } from 'next/navigation'; // Use useRouter from next/navigation
 
 const SignUpPage = () => {
   const [firstName, setFirstName] = useState('');
@@ -8,37 +11,46 @@ const SignUpPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null); // State for error messages
-  const [success, setSuccess] = useState(null); // State for success messages
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const router = useRouter(); // Initialize useRouter
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log({ firstName, lastName, username, email, password });
+    const auth = getAuth();
 
     try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ firstName, lastName, username, email, password }),
-      });
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      const data = await response.json();
+      // Save additional user data to Firestore
+      const userData = {
+        uid: user.uid,
+        firstName,
+        lastName,
+        username,
+        email,
+      };
 
-      if (response.ok) {
-        setSuccess(data.message);
-        setError(null); // Clear any existing errors
-        // Optionally, redirect the user or clear the form
-      } else {
-        setError(data.error);
-        setSuccess(null); // Clear any existing success messages
-      }
+      await setDoc(doc(db, 'users', user.uid), userData);
+
+      setSuccess('User registered successfully');
+      setError(null);
+      
+      // Clear form fields
+      setFirstName('');
+      setLastName('');
+      setUsername('');
+      setEmail('');
+      setPassword('');
+
+      // Redirect to the login page after successful signup
+      router.push('/logAndsign/login');
     } catch (error) {
-      console.error('Network error:', error);
-      setError('An unexpected error occurred. Please try again later.');
-      setSuccess(null); // Clear any existing success messages
+      console.error('Error signing up:', error);
+      setError(error.message);
+      setSuccess(null);
     }
   };
 
@@ -109,11 +121,22 @@ const SignUpPage = () => {
             Sign Up
           </button>
         </form>
-        {error && <p className="text-red-500 mt-4">{error}</p>} {/* Display error message */}
-        {success && <p className="text-green-500 mt-4">{success}</p>} {/* Display success message */}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {success && <p className="text-green-500 mt-4">{success}</p>}
+        <button
+          onClick={() => router.push('/logAndsign/login')} // Route to the login page
+          className="mt-4 bg-blue-600 text-warm-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+        >
+          Already have an account? Log In
+        </button>
       </div>
     </div>
   );
 };
 
 export default SignUpPage;
+
+
+//bIRRFXxwzQcVa7PEos4X4NRrqOA3
+
+//"bIRRFXxwzQcVa7PEos4X4NRrqOA3"

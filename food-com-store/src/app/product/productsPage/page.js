@@ -1,13 +1,15 @@
-// app/product/productsPage/page.js
 "use client"; // Mark this component as a Client Component
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head'; // Import Head for SEO meta tags
+import { auth } from '../../lib/firebase'; // Import your auth configuration
+import { signOut } from 'firebase/auth'; // Import signOut for logout
 import ProductFilters from '../components/ProductFilters';
 import ProductList from '../components/ProductList';
 import Pagination from '../components/Pagination';
 import { fetchProducts, fetchCategories, buildQueryString } from './sourceCode';
+
 /**
  * ProductsPage component that displays a list of products with filtering, sorting, and pagination.
  * 
@@ -32,12 +34,22 @@ export default function ProductsPage({ searchParams }) {
   const [imageIndex, setImageIndex] = useState({});
   const limit = 20;
   const router = useRouter();
+  const [user, setUser] = useState(null); // Track user login state
 
   // Fetch categories on component mount
   useEffect(() => {
     fetchCategories()
       .then(setCategories)
       .catch(err => console.error('Error fetching categories:', err));
+  }, []);
+
+  // Listen to authentication state changes
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(currentUser => {
+      setUser(currentUser); // Update user state
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
   // Fetch products based on search, category, and filters
@@ -66,10 +78,6 @@ export default function ProductsPage({ searchParams }) {
     setPage(searchParams.page ? parseInt(searchParams.page, 10) : 1);
   }, [searchParams]);
 
-
-   /**
-   * Handles the search operation by updating the search term and fetching products.
-   */
   const handleSearch = () => {
     setSearchTerm(searchInput);
     const queryString = buildQueryString({
@@ -95,11 +103,6 @@ export default function ProductsPage({ searchParams }) {
     setPage(1);
   };
 
-
-    /**
-   * Handles the change of selected category and fetches products based on it.
-   * @param {string} category - The selected category.
-   */
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     const queryString = buildQueryString({
@@ -125,9 +128,6 @@ export default function ProductsPage({ searchParams }) {
     setPage(1);
   };
 
-/**
-   * Resets the filters applied to the product list.
-   */
   const resetFilters = () => {
     setSearchTerm('');
     setSelectedCategory('');
@@ -153,11 +153,6 @@ export default function ProductsPage({ searchParams }) {
     });
   };
 
-
-    /**
-   * Handles changes in the sorting options and fetches products accordingly.
-   * @param {Event} e - The change event.
-   */
   const handleSortChange = (e) => {
     const [sortBy, order] = e.target.value.split(':');
     setSortOrder(sortBy);
@@ -185,11 +180,6 @@ export default function ProductsPage({ searchParams }) {
     setPage(1);
   };
 
-
-    /**
-   * Handles page change for pagination.
-   * @param {number} newPage - The new page number.
-   */
   const handlePageChange = (newPage) => {
     setPage(newPage);
     const queryString = buildQueryString({
@@ -214,45 +204,39 @@ export default function ProductsPage({ searchParams }) {
     });
   };
 
-
-  /**
-   * Handles the key down event to trigger search on Enter key.
-   * @param {Event} e - The key down event.
-   */
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
 
-    /**
-   * Changes the displayed image in the product image carousel.
-   * @param {string} productId - The ID of the product.
-   * @param {string} direction - The direction to change the image ('next' or 'prev').
-   */
-
   const handleImageChange = (productId, direction) => {
     setImageIndex((prevIndex) => {
       const currentIndex = prevIndex[productId] || 0;
       const imageCount = products.find(product => product.id === productId).images.length;
-  
+
       let newIndex;
       if (direction === 'next') {
         newIndex = (currentIndex + 1) % imageCount; // Loop back to the first image
       } else if (direction === 'prev') {
         newIndex = (currentIndex - 1 + imageCount) % imageCount; // Loop back to the last image if going before the first
       }
-  
+
       return { ...prevIndex, [productId]: newIndex };
     });
   };
-  
-  /**
-   * Navigates back to the previous page.
-   */
+
   const handleGoBack = () => {
     router.back();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // No additional action needed here, user state will update via auth.onAuthStateChanged
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   if (loading) {
@@ -286,6 +270,23 @@ export default function ProductsPage({ searchParams }) {
 
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Products</h1>
+        
+        {/* Logout/Login Button */}
+        {user ? (
+          <button 
+            onClick={handleLogout} 
+            className="mb-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Logout
+          </button>
+        ) : (
+          <button 
+            onClick={() => router.push('/logAndsign/login')} 
+            className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Log In
+          </button>
+        )}
 
         <ProductFilters
           categories={categories}
