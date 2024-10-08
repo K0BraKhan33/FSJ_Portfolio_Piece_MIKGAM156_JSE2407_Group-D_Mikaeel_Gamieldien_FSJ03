@@ -14,22 +14,28 @@ export async function GET(req) {
         const productsRef = collection(db, 'products');
         let productsQuery = query(productsRef);
 
-        console.log('Base query initialized.');
-
         // Apply category filter
         if (category) {
             productsQuery = query(productsQuery, where('category', '==', category));
-            console.log(`Category filter applied: ${category}`);
+        }
+
+        // Apply sorting
+        if (sortBy && ['price', 'rating'].includes(sortBy)) {
+            productsQuery = query(productsQuery, orderBy(sortBy, order === 'desc' ? 'desc' : 'asc'));
         }
 
         // Apply case-insensitive fuzzy search for title
         if (searchQuery) {
             const lowerCaseQuery = searchQuery.toLowerCase();
-            const allDocsSnapshot = await getDocs(productsRef);
-            const products = allDocsSnapshot.docs.map(doc => ({
+            const allDocsSnapshot = await getDocs(productsQuery); // use productsQuery to keep other filters
+            let products = allDocsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             })).filter(product => product.title.toLowerCase().includes(lowerCaseQuery));
+
+            // Pagination (if needed)
+            const startIndex = (page - 1) * limitNum;
+            products = products.slice(startIndex, startIndex + limitNum); // Paginate the filtered products
 
             return new Response(JSON.stringify({
                 products,
@@ -44,12 +50,6 @@ export async function GET(req) {
             });
         }
 
-        // Apply sorting
-        if (sortBy && ['price', 'rating'].includes(sortBy)) {
-            productsQuery = query(productsQuery, orderBy(sortBy, order === 'desc' ? 'desc' : 'asc'));
-            console.log(`Sorting applied: ${sortBy} in ${order} order`);
-        }
-
         // Pagination
         const startIndex = (page - 1) * limitNum;
         let paginationQuery = query(productsQuery, limit(limitNum));
@@ -60,20 +60,13 @@ export async function GET(req) {
 
             if (lastVisible) {
                 paginationQuery = query(paginationQuery, startAfter(lastVisible), limit(limitNum));
-                console.log(`Pagination applied. Page: ${page}`);
-            } else {
-                console.warn('No lastVisible document found for pagination.');
             }
         }
 
         // Execute the query
         const snapshot = await getDocs(paginationQuery);
-        console.log('Query executed successfully.');
-
-        // Extract the data from each document
         const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Return the products with pagination
         return new Response(JSON.stringify({
             products,
             currentPage: page,
@@ -86,7 +79,6 @@ export async function GET(req) {
             },
         });
     } catch (error) {
-        console.error('Error details:', error);
         return new Response(JSON.stringify({ error: 'Failed to fetch products', details: error.message || error }), {
             status: 500,
             headers: {
