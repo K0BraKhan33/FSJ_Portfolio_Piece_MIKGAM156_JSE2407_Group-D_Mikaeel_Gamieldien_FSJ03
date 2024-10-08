@@ -13,7 +13,7 @@ export async function GET(req) {
 
         const productsRef = collection(db, 'products');
         let productsQuery = query(productsRef);
-        
+
         console.log('Base query initialized.');
 
         // Apply category filter
@@ -22,14 +22,26 @@ export async function GET(req) {
             console.log(`Category filter applied: ${category}`);
         }
 
-        // Apply search query filter for title
+        // Apply case-insensitive fuzzy search for title
         if (searchQuery) {
-            productsQuery = query(
-                productsQuery,
-                where('title', '>=', searchQuery),
-                where('title', '<=', searchQuery + '\uf8ff')
-            );
-            console.log(`Search query applied: ${searchQuery}`);
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            const allDocsSnapshot = await getDocs(productsRef);
+            const products = allDocsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })).filter(product => product.title.toLowerCase().includes(lowerCaseQuery));
+
+            return new Response(JSON.stringify({
+                products,
+                currentPage: page,
+                totalItems: products.length,
+                totalPages: Math.ceil(products.length / limitNum),
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
         }
 
         // Apply sorting
