@@ -223,7 +223,11 @@ export default function ProductDetailsPage({ params }) {
   };
 
   const toggleReviewModal = () => {
-    setIsReviewModalOpen(!isReviewModalOpen);
+    if (username){
+    setIsReviewModalOpen(!isReviewModalOpen);}
+    else{
+      alert('Please log in to review or edit products.');
+    }
   };
 
   const handleBackClick = () => {
