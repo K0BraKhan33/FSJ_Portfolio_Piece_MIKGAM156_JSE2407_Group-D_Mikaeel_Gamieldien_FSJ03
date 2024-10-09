@@ -36,6 +36,24 @@ export default function ProductsPage({ searchParams }) {
   const router = useRouter();
   const [user, setUser] = useState(null); // Track user login state
 
+  // Inside your ProductsPage component
+
+useEffect(() => {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    });
+  }
+}, []);
+
+
   // Fetch categories on component mount
   useEffect(() => {
     fetchCategories()
@@ -77,6 +95,25 @@ export default function ProductsPage({ searchParams }) {
     setSortDirection(searchParams.order || '');
     setPage(searchParams.page ? parseInt(searchParams.page, 10) : 1);
   }, [searchParams]);
+
+  // Caching images when the component mounts
+  useEffect(() => {
+    const cacheImages = async () => {
+      if ('caches' in window) {
+        const cache = await caches.open('product-images');
+
+        products.forEach(product => {
+          product.images.forEach(imageUrl => {
+            cache.add(imageUrl).catch(err => {
+              console.error('Failed to cache image:', imageUrl, err);
+            });
+          });
+        });
+      }
+    };
+
+    cacheImages();
+  }, [products]);
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
