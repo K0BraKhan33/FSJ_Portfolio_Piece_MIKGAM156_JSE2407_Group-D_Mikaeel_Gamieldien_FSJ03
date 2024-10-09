@@ -66,14 +66,56 @@ FoodCom is an e-commerce application built with Next.js, featuring a product lis
 ## Folder Structure
 
 ```
-foodCom/
-├── app/
-│   ├── product/
-│   ├── components/
-│   └── ...
-├── public/
-├── styles/
-└── next.config.mjs
+D:\DO NOT DELETE MIKAEEL PROJECTS\repract\food-com-store
+├── .next
+│   ├── cache
+│   │   └── webpack
+│   │       └── client-development
+│   │           ├── 0.pack.gz
+│   │           ├── index.pack.gz
+│   │           └── index.pack.gz.old
+│   ├── server
+│   │   ├── app-paths-manifest.json
+│   │   ├── interception-route-rewrite-manifest.js
+│   │   ├── middleware-build-manifest.js
+│   │   ├── middleware-manifest.json
+│   │   ├── middleware-react-loadable-manifest.js
+│   │   ├── next-font-manifest.js
+│   │   ├── next-font-manifest.json
+│   │   ├── pages-manifest.json
+│   │   ├── server-reference-manifest.js
+│   │   └── server-reference-manifest.json
+│   ├── static
+│   │   ├── chunks
+│   │   │   └── polyfills.js
+│   │   └── development
+│   │       ├── _buildManifest.js
+│   │       └── _ssgManifest.js
+│   ├── types
+│   │   └── package.json
+│   ├── app-build-manifest.json
+│   ├── build-manifest.json
+│   ├── package.json
+│   ├── react-loadable-manifest.json
+│   └── trace
+├── node_modules
+├── public
+├── src
+├── .env
+├── .eslintrc.json
+├── .gitignore
+├── favicon.ico
+├── file-structure.txt
+├── jsconfig.json
+├── next.config.mjs
+├── nonfunctioningNextconfiDOTmjs.txt
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── README.md
+└── tailwind.config.js
+└── _document.js
+
 ```
 
 ## Usage
