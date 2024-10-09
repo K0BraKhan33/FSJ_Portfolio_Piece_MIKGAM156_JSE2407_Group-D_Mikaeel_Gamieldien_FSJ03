@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { getAuth } from 'firebase/auth';
+import { EmailAuthCredential, getAuth } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase.js';
 
@@ -97,6 +97,7 @@ export default function ProductDetailsPage({ params }) {
       comment: newReviewComment || '',  // Fallback to empty string if undefined
       date: new Date().toISOString(),
       uid: user.uid,
+      email: user.email
     };
 
     try {
