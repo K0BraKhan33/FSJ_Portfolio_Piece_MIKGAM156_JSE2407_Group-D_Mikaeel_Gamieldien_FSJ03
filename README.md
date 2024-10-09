@@ -2,6 +2,10 @@
 # Goods&Marting
 website
 -(https://goodsamarting.vercel.app/product/productsPage)
+API
+https://goodsamarting.vercel.app/api/products
+https://goodsamarting.vercel.app/api/products/[id]
+https://goodsamarting.vercel.app/api/category
 
 FoodCom is an e-commerce application built with Next.js, featuring a product listing and detail page with dynamic SEO, filtering, sorting, and user interaction features.
 
