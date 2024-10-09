@@ -1,8 +1,11 @@
 
 # Goods&Marting
-#Website
+
+## Website
 -(https://goodsamarting.vercel.app/product/productsPage)
-#API'S
+
+## API'S
+
 -https://goodsamarting.vercel.app/api/products
 -https://goodsamarting.vercel.app/api/products/[id]
 -https://goodsamarting.vercel.app/api/category
