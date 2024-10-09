@@ -1,0 +1,19 @@
+
+{
+"shortname": "GM Store",
+"name": "GoodMarting",
+ "description": "mikgam156 tsting api's",
+"icons": [
+{
+"src": "/favicon.ico",
+"sizes": "64x64 32x32 24x24 16x16",
+ "type": "image/x-icon"
+}
+],
+
+"start_url": "/product/produuctsPage",
+"background_color": "#ffffff",
+"display": "standalone",
+"scope": "/",
+"theme_color": "#ffffff"
+}

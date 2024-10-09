@@ -95,13 +95,13 @@ const ProductList = ({
       </Head>
 
       {products.length === 0 ? (
-        <div className="text-center text-xl text-[#FDF6E3]">No items found for: {searchTerm}</div>
+        <div className="text-center text-xl text-navy-blue">No items found for: {searchTerm}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {products.map((product) => {
             const paddedId = product.id.toString().padStart(3, '0'); // Format the ID to 3 digits
             return (
-              <div key={paddedId} className="bg-[#224724] border border-gray-200 p-4 rounded-lg shadow-sm"> {/* Earthy green color */}
+              <div key={paddedId} className="bg-navy-blue border border-gray-200 p-4 rounded-lg shadow-sm"> {/* Navy Blue color */}
                 <div className="relative">
                   {/* Image Carousel Controls */}
                   {product.images.length > 1 && (
@@ -152,8 +152,8 @@ const ProductList = ({
                                 src={imageSrc || '../image-placeholder.webp'} // Fallback to placeholder if src is empty
                                 alt={product.title}
                                 className="object-contain w-full h-full rounded" // Use object-contain to maintain aspect ratio
-                                width={300}
-                                height={300}
+                                width={150}
+                                height={150}
                                 loading="lazy"
                                 placeholder="blur"
                                 blurDataURL="../image-placeholder.webp"
@@ -171,17 +171,17 @@ const ProductList = ({
                 </div>
 
                 {/* Product Info */}
-                <h2 className="text-lg font-semibold mt-2 text-[#FDF6E3]">{product.title}</h2>
-                <p className="text-sm text-[#FDF6E3]">Category: {product.category}</p>
+                <h2 className="text-lg font-semibold mt-2 text-teal">{product.title}</h2>
+                <p className="text-sm text-teal">Category: {product.category}</p>
                 <div className="flex flex-wrap mt-2">
                   {product.tags.map((tag) => (
-                    <span key={tag} className="mr-2 mb-1 bg-gray-800 px-2 py-1 rounded text-sm text-[#FFF3E0]">
+                    <span key={tag} className="mr-2 mb-1 bg-gray-800 px-2 py-1 rounded text-sm text-soft-gray">
                       {tag}
                     </span>
                   ))}
                 </div>
-                <p className="mt-2 font-bold text-lg text-[#FDF6E3]">${product.price.toFixed(2)}</p>
-                <p className="mt-1 text-[#FDF6E3]">Rating: {product.rating.toFixed(1)}</p>
+                <p className="mt-2 font-bold text-lg text-teal">${product.price.toFixed(2)}</p>
+                <p className="mt-1 text-teal">Rating: {product.rating.toFixed(1)}</p>
               </div>
             );
           })}
@@ -204,6 +204,46 @@ const ProductList = ({
           to {
             transform: rotate(360deg);
           }
+        }
+      `}</style>
+
+      {/* Tailwind CSS Custom Colors */}
+      <style jsx global>{`
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* Custom Colors */
+        :root {
+          --navy-blue: #1F3B4D; /* Deep and strong */
+          --teal: #3AAFA9; /* Soothing cool color */
+          --coral: #FF6F61; /* Pop of warmth */
+          --soft-gray: #E5E5E5; /* Neutral backdrop */
+          --mustard-yellow: #FFD166; /* Bright accent */
+        }
+
+        .bg-navy-blue {
+          background-color: var(--navy-blue);
+        }
+
+        .text-navy-blue {
+          color: var(--navy-blue);
+        }
+
+        .text-teal {
+          color: var(--teal);
+        }
+
+        .text-soft-gray {
+          color: var(--soft-gray);
+        }
+
+        .bg-coral {
+          background-color: var(--coral);
+        }
+
+        .bg-mustard-yellow {
+          background-color: var(--mustard-yellow);
         }
       `}</style>
     </div>

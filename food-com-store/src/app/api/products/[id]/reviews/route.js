@@ -1,5 +1,6 @@
 import { db } from '../../../../lib/firebase.js'; // Adjust the path to your firebase.js
-import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, getDoc, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 /**
  * @desc API route to add a review to a product by ID
@@ -132,3 +133,43 @@ export async function PUT(req, { params }) {
         });
     }
 }
+
+/**
+ * @desc API route to delete all reviews by the authenticated user
+ * @param {Object} req - The request object
+ * @param {Object} context - Context containing the route parameters (including 'id')
+ */
+export default async function handler(req, res) {
+    const { id } = req.query;
+  
+    if (req.method === 'DELETE') {
+      const token = req.headers.authorization?.split(' ')[1]; // Get the token from the header
+      if (!token) {
+        return res.status(401).json({ message: 'Unauthorized. User must be logged in to delete reviews.' });
+      }
+  
+      try {
+        const decodedToken = await getAuth().verifyIdToken(token);
+        const uid = decodedToken.uid;
+  
+        // Extract reviewId from request body
+        const { reviewId } = req.body;
+  
+        // Logic to delete the review
+        const reviewRef = doc(db, 'products', id, 'reviews', reviewId);
+        await deleteDoc(reviewRef);
+  
+        return res.status(200).json({ message: 'Review deleted successfully.' });
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        return res.status(401).json({ message: 'Unauthorized. Invalid token.' });
+      }
+    } else {
+      res.setHeader('Allow', ['DELETE']);
+      return res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
+  }
+
+
+
+  

@@ -55,8 +55,8 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#224724] text-warm-white">
-      <div className="bg-gray-800 p-8 rounded shadow-lg w-full max-w-md">
+    <div className="min-h-screen text-teal flex items-center justify-center text-warm-white">
+      <div className="bg-navy p-8 rounded shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-6">Create Your Account</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -116,7 +116,7 @@ const SignUpPage = () => {
           </div>
           <button
             type="submit"
-            className="bg-teal-600 text-warm-white px-4 py-2 rounded hover:bg-teal-700 w-full"
+            className="bg-green-500 hover:bg-green-600 text-white text-warm-white px-4 py-2 rounded hover:bg-teal-700 w-full"
           >
             Sign Up
           </button>
@@ -125,7 +125,7 @@ const SignUpPage = () => {
         {success && <p className="text-green-500 mt-4">{success}</p>}
         <button
           onClick={() => router.push('/logAndsign/login')} // Route to the login page
-          className="mt-4 bg-blue-600 text-warm-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+          className="mt-4 bg-blue-600 text-white text-warm-white px-4 py-2 rounded hover:bg-blue-700 w-full"
         >
           Already have an account? Log In
         </button>

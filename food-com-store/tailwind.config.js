@@ -10,6 +10,11 @@ module.exports = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        navy: '#1F3B4D',      // Navy Blue
+        teal: '#3AAFA9',      // Teal
+        coral: '#FF6F61',     // Coral
+        softGray: '#E5E5E5',  // Soft Gray
+        mustard: '#FFD166',   // Mustard Yellow
       },
     },
   },

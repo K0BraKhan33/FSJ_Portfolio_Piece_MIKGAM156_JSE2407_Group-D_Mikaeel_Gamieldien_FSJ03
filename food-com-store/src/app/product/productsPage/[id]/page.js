@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { getAuth } from 'firebase/auth';
@@ -22,7 +22,17 @@ export default function ProductDetailsPage({ params }) {
   const [reviewerName, setReviewerName] = useState('');
   const [notLoggedIn, setNotLoggedIn] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
-
+  const [userInteracted, setUserInteracted] = useState(false); 
+  const autoScrollTimeout = useRef(null);
+  const imageContainerRef = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+   const handleImageLoad = () => {
+    setImagesLoaded(true);
+  };
+  const handleThumbnailClick = (index) => {
+    setCurrentImageIndex(index);
+    resetAutoScroll();
+  };
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -38,7 +48,14 @@ export default function ProductDetailsPage({ params }) {
         setLoading(false);
       }
     }
+
     fetchProduct();
+
+    // Check if a review exists in localStorage
+    const storedReview = JSON.parse(localStorage.getItem(`review-${id}`));
+    if (storedReview) {
+      setEditingReview(storedReview);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -92,6 +109,9 @@ export default function ProductDetailsPage({ params }) {
         setSortedReviews((prevReviews) => 
           prevReviews.map((rev) => (rev.id === editingReview.id ? { ...rev, ...newReview } : rev))
         );
+
+        // Cache the updated review in localStorage
+        localStorage.setItem(`review-${id}`, JSON.stringify(newReview));
       } else {
         // Create a new review
         const res = await fetch(`/api/products/${id}/reviews`, {
@@ -108,6 +128,9 @@ export default function ProductDetailsPage({ params }) {
         }
 
         setSortedReviews((prevReviews) => [newReview, ...prevReviews]);
+
+        // Cache the new review in localStorage
+        localStorage.setItem(`review-${id}`, JSON.stringify(newReview));
       }
 
       toggleReviewModal();
@@ -119,6 +142,29 @@ export default function ProductDetailsPage({ params }) {
     }
   };
 
+  const resetAutoScroll = () => {
+    setUserInteracted(true);
+    if (autoScrollTimeout.current) clearTimeout(autoScrollTimeout.current);
+    autoScrollTimeout.current = setTimeout(() => {
+      setUserInteracted(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (!userInteracted && product?.images?.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % product.images.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [userInteracted, product]);
+
+  useEffect(() => {
+    if (product?.images?.length > 1 && imageContainerRef.current) {
+      imageContainerRef.current.scrollLeft = currentImageIndex * imageContainerRef.current.offsetWidth;
+    }
+  }, [currentImageIndex, product]);
+
   const handleEditReview = (review) => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -129,7 +175,50 @@ export default function ProductDetailsPage({ params }) {
       setNewReviewComment(review.comment);
       toggleReviewModal();
     } else {
+      alert('You cannot edit this review. Either there was an error or you are not logged in correctly');
       console.error('You cannot edit this review.');
+    }
+  };
+
+  const handleDeleteReviews = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    // Check if the user is logged in
+    if (!user) {
+        setNotLoggedIn(true);
+        return;
+    }
+
+    try {
+        const idToken = await user.getIdToken(); // Get the token
+
+        const res = await fetch(`/api/products/${id}/reviews`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${idToken}`, // Include the token
+                'Content-Type': 'application/json',
+            },
+        });
+
+        // Check if the response is okay
+        if (!res.ok) {
+            const errorData = await res.json();
+            alert(`Sorry, an error has been found deleting the user review: ${errorData.message}`);
+            throw new Error(`Failed to delete reviews: ${errorData.message}`);
+        }
+
+        // Update the local state by removing the user's reviews
+        setSortedReviews((prevReviews) =>
+            prevReviews.filter((review) => review.uid !== user.uid)
+        );
+
+        // Optionally, provide feedback to the user about successful deletion
+        alert('Review deleted successfully!');
+        localStorage.removeItem(`review-${id}`); // Remove from localStorage
+    } catch (error) {
+        console.error('Error deleting reviews:', error);
+        alert('An unexpected error occurred while trying to delete the review. Please try again later.');
     }
   };
 
@@ -150,7 +239,7 @@ export default function ProductDetailsPage({ params }) {
   };
 
   if (loading) {
-    return <div className="text-center text-warm-white">Loading product details...</div>;
+    return <div className="text-center text-soft-gray">Loading product details...</div>;
   }
 
   if (!product) {
@@ -170,119 +259,150 @@ export default function ProductDetailsPage({ params }) {
   } = product;
 
   return (
-    <div className="container mx-auto p-4 bg-[#224724] text-warm-white relative">
+    <div className="container mx-auto p-4 bg-soft-gray text-navy-blue relative">
       <button
         onClick={handleBackClick}
-        className="bg-teal-600 text-warm-white px-4 py-2 rounded mb-4 hover:bg-teal-700"
+        className="bg-teal text-soft-gray px-4 py-2 rounded mb-4 hover:bg-teal-700"
       >
         Back to Products
       </button>
-      <h1 className="text-3xl font-bold mb-4">{title}</h1>
+      <h1 className="text-3xl font-bold mb-4 text-teal ">{title}</h1>
 
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gallery relative flex flex-col">
           {!imagesLoaded && (
             <div className="text-center text-teal-400">ProductID {id} found, please wait...</div>
           )}
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4" style={{ width: '100%', height: '80vh' }}>
-            {images?.map((image, index) => (
-              <div key={index} className="flex-none snap-start" style={{ width: '100%' }}>
+          <div
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4"
+            ref={imageContainerRef}
+            onScroll={resetAutoScroll}
+            onTouchStart={resetAutoScroll}
+            onMouseDown={resetAutoScroll}
+            style={{ width: '100%', height: '80vh' }}
+          >
+            {images?.map((img, idx) => (
+              <div key={idx} className="flex-shrink-0 w-full h-full relative snap-center">
                 <Image
-                  src={image}
+                  src={img}
                   alt={title}
-                  width={500}
-                  height={500}
-                  onLoad={() => setImagesLoaded(true)}
-                  className={`object-contain ${imagesLoaded ? '' : 'hidden'}`}
+                  width={720}
+                  height={360}
+                  className="w-full h-full object-cover rounded"
+                  onLoad={handleImageLoad}
+                  style={{
+                    display: imagesLoaded ? 'block' : 'none',
+                    maxHeight: '100%',
+                  }}
                 />
               </div>
             ))}
           </div>
+
+          <div className="thumbnails flex space-x-2 mt-4 justify-center">
+            {images?.map((img, idx) => (
+              <Image
+                key={idx}
+                src={img}
+                width={100}
+                height={100}
+                alt={`${title} thumbnail ${idx + 1}`}
+                className={`w-16 h-16 object-cover cursor-pointer rounded border-2 ${
+                  currentImageIndex === idx ? 'border-teal-600' : 'border-transparent'
+                }`}
+                onClick={() => handleThumbnailClick(idx)}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-col p-4 bg-gray-800 rounded">
-          <p className="text-lg font-semibold">Price: ${price.toFixed(2)}</p>
-          <p className="text-md mt-2">Rating: {rating} ⭐</p>
-          <p className="text-md">Stock: {stock}</p>
-          <p className="text-md">Category: {category}</p>
-          <p className="text-md">Brand: {brand}</p>
-          <p className="text-md">Tags: {tags.join(', ')}</p>
-          <p className="text-md mt-2">{description}</p>
-          <button
-            onClick={toggleReviewModal}
-            className="bg-teal-600 text-warm-white px-4 py-2 rounded mt-4 hover:bg-teal-700"
-          >
-            Add Review
-          </button>
+        <div className="p-4 border text-white border-navy-blue rounded-md">
+          <h2 className="text-2xl font-semibold mb-2">Product Details</h2>
+          <p className="mb-2"><strong>Price:</strong> ${price.toFixed(2)}</p>
+          <p className="mb-2"><strong>Description:</strong> {description}</p>
+          <p className="mb-2"><strong>Brand:</strong> {brand}</p>
+          <p className="mb-2"><strong>Stock:</strong> {stock}</p>
+          <p className="mb-2"><strong>Category:</strong> {category}</p>
+          <p className="mb-2"><strong>Tags:</strong> {tags.join(', ')}</p>
         </div>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Reviews</h2>
-        <div>
-          {sortedReviews.map((review, index) => (
-            <div key={review.id || index} className="border-b border-gray-600 py-2">
-              <p className="font-semibold">{review.reviewerName} - {review.rating} ⭐</p>
-              <p>{review.comment}</p>
-              <p className="text-sm text-gray-500">{new Date(review.date).toLocaleString()}</p>
-              {review.reviewerName === reviewerName && (
-                <button onClick={() => handleEditReview(review)} className="text-teal-600 mt-2">
+      <button
+        onClick={toggleReviewModal}
+        className="bg-teal text-white px-4 py-2 rounded mt-4 hover:bg-teal-700"
+      >
+        Leave a Review
+      </button>
+      <h2 className="text-2xl font-semibold mb-4 text-navy-blue">Reviews</h2>
+      {sortedReviews.length > 0 ? (
+        sortedReviews.map((review, index) => (
+          <div key={review.id || index} className="border-b bg-teal border-navy-blue py-2">
+            <p className="font-semibold text-navy-blue">
+              {review.reviewerName} - {review.rating} ⭐
+            </p>
+            <p>{review.comment}</p>
+            <p className="text-sm text-green-900 ">
+              {new Date(review.date).toLocaleString()}
+            </p>
+            {review.reviewerName === reviewerName && (
+              <div className="flex space-x-2">
+                <button onClick={() => handleEditReview(review)} className="text-purple-700 mt-2">
                   Edit Review
                 </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+                <button onClick={handleDeleteReviews} className="text-red-600 mt-2">
+                  Delete Review
+                </button>
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-500">No reviews yet.</p>
+      )}
 
       {isReviewModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-4 rounded shadow-lg">
-            <h2 className="text-lg font-semibold">{editingReview ? 'Edit Review' : 'Add Review'}</h2>
-            <div className="flex flex-col mt-4">
-              <label className="mb-2">Your Name:</label>
-              <input
-                type="text"
-                value={reviewerName}
-                readOnly
-                className="mb-2 p-2 rounded bg-gray-700 text-warm-white"
-              />
-              <label className="mb-2">Rating (1-5):</label>
-              <input
-                type="number"
-                value={newReviewRating}
-                onChange={(e) => setNewReviewRating(Number(e.target.value))}
-                className="mb-2 p-2 rounded bg-gray-700 text-warm-white"
-                min="1"
-                max="5"
-              />
-              <label className="mb-2">Comment:</label>
-              <textarea
-                value={newReviewComment}
-                onChange={(e) => setNewReviewComment(e.target.value)}
-                className="mb-4 p-2 rounded bg-gray-700 text-warm-white"
-              />
-              <div className="flex justify-end">
-                <button onClick={toggleReviewModal} className="bg-red-600 text-white px-4 py-2 rounded mr-2">
-                  Cancel
-                </button>
-                <button onClick={handleConfirmReview} className="bg-teal-600 text-white px-4 py-2 rounded">
-                  {editingReview ? 'Update Review' : 'Submit Review'}
-                </button>
-              </div>
+          <div className="bg-white p-4 rounded-md shadow-lg">
+            <h3 className="text-lg font-semibold">Leave a Review</h3>
+            <label className="block mb-2">Rating (1-5):</label>
+            <input
+              type="number"
+              min="1"
+              max="5"
+              defaultValue="5"
+              value={newReviewRating}
+              onChange={(e) => setNewReviewRating(parseInt(e.target.value))}
+              className="border border-gray-300 rounded mb-2 p-1 w-full"
+            />
+            <label className="block mb-2">Comment:</label>
+            <textarea
+              value={newReviewComment}
+              onChange={(e) => setNewReviewComment(e.target.value)}
+              className="border border-gray-300 rounded mb-2 p-1 w-full"
+              rows="4"
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={handleConfirmReview}
+                className="bg-teal text-white px-4 py-2 rounded hover:bg-teal-700"
+              >
+                {editingReview ? 'Update Review' : 'Submit Review'}
+              </button>
+              <button
+                onClick={toggleReviewModal}
+                className="ml-2 text-black hover:text-gray-800"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {notLoggedIn && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-4 rounded shadow-lg">
-            <h2 className="text-lg font-semibold">Please Log In to Add a Review</h2>
-            <button onClick={() => setNotLoggedIn(false)} className="bg-teal-600 text-white px-4 py-2 rounded mt-4">
-              Close
-            </button>
-          </div>
+        <div className="text-red-500">
+          You must be logged in to leave a review.
         </div>
       )}
     </div>

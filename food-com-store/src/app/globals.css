@@ -3,16 +3,25 @@
 @tailwind utilities;
 
 :root {
+  /* Existing colors */
   --foreground-rgb: 241, 235, 226; /* Light earthy tone */
   --background-start-rgb: 37, 38, 36; /* Dark earthy tone */
   --background-end-rgb: 114, 96, 69;   /* Medium earthy tone */
+
+  /* New color palette */
+  --navy-blue: 31, 59, 77; /* Deep and strong */
+  --teal: 58, 175, 169;    /* Soothing cool color */
+  --coral: 255, 111, 97;   /* Pop of warmth */
+  --soft-gray: 229, 229, 229; /* Neutral backdrop */
+  --mustard-yellow: 255, 209, 102; /* Bright accent */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 241, 235, 226; /* Light earthy tone for dark mode */
+    /* Update to match new color scheme */
+    --foreground-rgb: 31, 59, 77; /* Use navy blue for dark mode foreground */
     --background-start-rgb: 26, 27, 25; /* Darker earthy tone for dark mode */
-    --background-end-rgb: 114, 96, 69;   /* Medium earthy tone for dark mode */
+    --background-end-rgb: 58, 175, 169;   /* Use teal for dark mode background */
   }
 }
 
@@ -30,4 +39,29 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Additional utility classes for new colors */
+.bg-navy-blue {
+  background-color: rgb(var(--navy-blue));
+}
+
+.text-navy-blue {
+  color: rgb(var(--navy-blue));
+}
+
+.text-teal {
+  color: rgb(var(--teal));
+}
+
+.text-soft-gray {
+  color: rgb(var(--soft-gray));
+}
+
+.bg-coral {
+  background-color: rgb(var(--coral));
+}
+
+.bg-mustard-yellow {
+  background-color: rgb(var(--mustard-yellow));
 }

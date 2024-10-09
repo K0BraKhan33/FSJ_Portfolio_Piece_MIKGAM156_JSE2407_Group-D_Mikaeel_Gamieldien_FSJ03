@@ -268,21 +268,21 @@ export default function ProductsPage({ searchParams }) {
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
 
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Products</h1>
+      <div className="container mx-auto p-4 bg-softGray">
+        <h1 className="text-2xl font-bold mb-4 text-navy">Products</h1>
         
         {/* Logout/Login Button */}
         {user ? (
           <button 
             onClick={handleLogout} 
-            className="mb-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            className="mb-4 px-4 py-2 bg-coral text-white rounded hover:bg-red-600"
           >
             Logout
           </button>
         ) : (
           <button 
             onClick={() => router.push('/logAndsign/login')} 
-            className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="mb-4 px-4 py-2 bg-teal text-white rounded hover:bg-teal-600"
           >
             Log In
           </button>
@@ -319,6 +319,7 @@ export default function ProductsPage({ searchParams }) {
           handlePageChange={handlePageChange}
           productsLength={products.length}
           limit={limit}
+          className="text-mustard"
         />
       </div>
     </>
