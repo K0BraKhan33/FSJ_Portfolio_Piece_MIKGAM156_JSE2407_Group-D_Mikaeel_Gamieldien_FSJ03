@@ -23,12 +23,16 @@ export default function ProductDetailsPage({ params }) {
   const [editingReview, setEditingReview] = useState(null); // State to store the review being edited
   const [userInteracted, setUserInteracted] = useState(false); // State to track user interaction for auto-scroll
   const autoScrollTimeout = useRef(null); // Ref for auto-scroll timeout
+  
+  const [sortBy, setSortBy] = useState(''); // Default to 'Choose Sort'
   const imageContainerRef = useRef(null); // Ref for image container
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // State to store the index of the currently displayed image
   // Function to handle image load event
    const handleImageLoad = () => {
     setImagesLoaded(true);
   };
+
+ 
   const handleThumbnailClick = (index) => {
     setCurrentImageIndex(index);
     resetAutoScroll();
@@ -248,7 +252,20 @@ export default function ProductDetailsPage({ params }) {
   if (!product) {
     return <div className="text-center text-red-500">Failed to load product details. Please try again later.</div>;
   }
-
+  const resetFilters = () => {
+    setSortBy(''); // Reset the sort dropdown to default (Choose Sort)
+    setSortedReviews(product?.reviews || []); // Reset reviews to default order (unsorted)
+  };
+  const sortReviews = (criteria) => {
+    setSortBy(criteria);
+    const sorted = [...(product?.reviews || [])];
+    if (criteria === 'date') {
+      sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (criteria === 'rating') {
+      sorted.sort((a, b) => b.rating - a.rating);
+    }
+    setSortedReviews(sorted);
+  };
   const {
     title,
     description,
@@ -337,6 +354,24 @@ export default function ProductDetailsPage({ params }) {
       >
         Leave a Review
       </button>
+      <div className="flex justify-between mb-4">
+            <div className="flex space-x-2">
+              <select
+                value={sortBy}
+                onChange={(e) => sortReviews(e.target.value)}
+                className="bg-navy text-teal text-warm-white p-2 rounded"
+              >
+                <option value="">Choose Sort</option>
+                <option value="date">Sort by Date</option>
+                <option value="rating">Sort by Rating</option>
+              </select>
+              <button onClick={resetFilters} className="bg-red-600 text-warm-white px-4 py-2 rounded hover:bg-red-700">
+                Reset
+              </button>
+            </div>
+          </div>
+
+
       <h2 className="text-2xl font-semibold mb-4 text-navy-blue">Reviews</h2>
       {sortedReviews.length > 0 ? (
         sortedReviews.map((review, index) => (
