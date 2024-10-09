@@ -1,6 +1,16 @@
 // next.config.js
 
 /** @type {import('next').NextConfig} */
+
+const { RecaptchaAuthConfig } = require('firebase-admin/lib/auth/auth-config');
+const withPWA=require('next-pwa');
+module.exports=withPWA({
+  reactStrictMode: true,
+  pwa:"public",
+  register: true,
+  skip:true,
+  disable:process.env.NODE_ENV === 'development'
+});
 const nextConfig = {
   async redirects() {
     return [
