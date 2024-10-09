@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Ensure this is a client component
 import React, { useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -6,25 +6,26 @@ import { db } from '../../lib/firebase.js'; // Adjust the import based on your f
 import { useRouter } from 'next/navigation'; // Use useRouter from next/navigation
 
 const SignUpPage = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const router = useRouter(); // Initialize useRouter
+  // State variables to manage form inputs and feedback messages
+  const [firstName, setFirstName] = useState(''); // First name input
+  const [lastName, setLastName] = useState(''); // Last name input
+  const [username, setUsername] = useState(''); // Username input
+  const [email, setEmail] = useState(''); // Email input
+  const [password, setPassword] = useState(''); // Password input
+  const [error, setError] = useState(null); // Error message state
+  const [success, setSuccess] = useState(null); // Success message state
+  const router = useRouter(); // Initialize useRouter for navigation
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const auth = getAuth();
+    e.preventDefault(); // Prevent default form submission
+    const auth = getAuth(); // Get Firebase authentication instance
 
     try {
-      // Create user with email and password
+      // Create user with email and password using Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const user = userCredential.user; // Get the newly created user
 
-      // Save additional user data to Firestore
+      // Prepare additional user data to save in Firestore
       const userData = {
         uid: user.uid,
         firstName,
@@ -33,12 +34,13 @@ const SignUpPage = () => {
         email,
       };
 
+      // Save user data to Firestore under 'users' collection
       await setDoc(doc(db, 'users', user.uid), userData);
 
-      setSuccess('User registered successfully');
-      setError(null);
+      setSuccess('User registered successfully'); // Set success message
+      setError(null); // Clear any existing error message
       
-      // Clear form fields
+      // Clear form fields after successful registration
       setFirstName('');
       setLastName('');
       setUsername('');
@@ -48,9 +50,9 @@ const SignUpPage = () => {
       // Redirect to the login page after successful signup
       router.push('/logAndsign/login');
     } catch (error) {
-      console.error('Error signing up:', error);
-      setError(error.message);
-      setSuccess(null);
+      console.error('Error signing up:', error); // Log any signup errors
+      setError(error.message); // Set error message to display
+      setSuccess(null); // Clear any existing success message
     }
   };
 
@@ -65,9 +67,9 @@ const SignUpPage = () => {
               type="text"
               id="firstName"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => setFirstName(e.target.value)} // Update first name on input change
               className="w-full p-2 rounded bg-gray-700 text-warm-white"
-              required
+              required // Mark this field as required
             />
           </div>
           <div className="mb-4">
@@ -76,9 +78,9 @@ const SignUpPage = () => {
               type="text"
               id="lastName"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => setLastName(e.target.value)} // Update last name on input change
               className="w-full p-2 rounded bg-gray-700 text-warm-white"
-              required
+              required // Mark this field as required
             />
           </div>
           <div className="mb-4">
@@ -87,9 +89,9 @@ const SignUpPage = () => {
               type="text"
               id="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)} // Update username on input change
               className="w-full p-2 rounded bg-gray-700 text-warm-white"
-              required
+              required // Mark this field as required
             />
           </div>
           <div className="mb-4">
@@ -98,9 +100,9 @@ const SignUpPage = () => {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)} // Update email on input change
               className="w-full p-2 rounded bg-gray-700 text-warm-white"
-              required
+              required // Mark this field as required
             />
           </div>
           <div className="mb-4">
@@ -109,20 +111,20 @@ const SignUpPage = () => {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)} // Update password on input change
               className="w-full p-2 rounded bg-gray-700 text-warm-white"
-              required
+              required // Mark this field as required
             />
           </div>
           <button
-            type="submit"
+            type="submit" // Submit button for the form
             className="bg-green-500 hover:bg-green-600 text-white text-warm-white px-4 py-2 rounded hover:bg-teal-700 w-full"
           >
             Sign Up
           </button>
         </form>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-        {success && <p className="text-green-500 mt-4">{success}</p>}
+        {error && <p className="text-red-500 mt-4">{error}</p>} {/* Display error message if any */}
+        {success && <p className="text-green-500 mt-4">{success}</p>} {/* Display success message if any */}
         <button
           onClick={() => router.push('/logAndsign/login')} // Route to the login page
           className="mt-4 bg-blue-600 text-white text-warm-white px-4 py-2 rounded hover:bg-blue-700 w-full"
@@ -135,8 +137,3 @@ const SignUpPage = () => {
 };
 
 export default SignUpPage;
-
-
-//bIRRFXxwzQcVa7PEos4X4NRrqOA3
-
-//"bIRRFXxwzQcVa7PEos4X4NRrqOA3"

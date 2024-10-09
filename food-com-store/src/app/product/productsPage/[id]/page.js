@@ -3,29 +3,29 @@
 import { useState, useEffect, useRef} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { EmailAuthCredential, getAuth } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase.js';
-
 export default function ProductDetailsPage({ params }) {
-  const { id } = params;
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const prePage = searchParams.get('page') || '1';
-  const [product, setProduct] = useState(null);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [sortedReviews, setSortedReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [newReviewRating, setNewReviewRating] = useState(0);
-  const [newReviewComment, setNewReviewComment] = useState('');
-  const [reviewerName, setReviewerName] = useState('');
-  const [notLoggedIn, setNotLoggedIn] = useState(false);
-  const [editingReview, setEditingReview] = useState(null);
-  const [userInteracted, setUserInteracted] = useState(false); 
-  const autoScrollTimeout = useRef(null);
-  const imageContainerRef = useRef(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { id } = params; // Extract product ID from params
+  const searchParams = useSearchParams(); // Access search parameters from the URL
+  const router = useRouter(); // Initialize Next.js router for navigation
+  const prePage = searchParams.get('page') || '1'; // Get the current page from search params
+  const [product, setProduct] = useState(null); // State to store product details
+  const [imagesLoaded, setImagesLoaded] = useState(false); // State to track if images are loaded
+  const [sortedReviews, setSortedReviews] = useState([]); // State to store sorted reviews
+  const [loading, setLoading] = useState(true); // Loading state
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false); // Modal visibility state for reviews
+  const [newReviewRating, setNewReviewRating] = useState(0); // State to store new review rating
+  const [newReviewComment, setNewReviewComment] = useState(''); // State to store new review comment
+  const [reviewerName, setReviewerName] = useState(''); // State to store reviewer's name
+  const [notLoggedIn, setNotLoggedIn] = useState(false); // State to track if the user is logged in
+  const [editingReview, setEditingReview] = useState(null); // State to store the review being edited
+  const [userInteracted, setUserInteracted] = useState(false); // State to track user interaction for auto-scroll
+  const autoScrollTimeout = useRef(null); // Ref for auto-scroll timeout
+  const imageContainerRef = useRef(null); // Ref for image container
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // State to store the index of the currently displayed image
+  // Function to handle image load event
    const handleImageLoad = () => {
     setImagesLoaded(true);
   };
@@ -97,7 +97,6 @@ export default function ProductDetailsPage({ params }) {
       comment: newReviewComment || '',  // Fallback to empty string if undefined
       date: new Date().toISOString(),
       uid: user.uid,
-      email: user.email
     };
 
     try {
@@ -224,12 +223,11 @@ export default function ProductDetailsPage({ params }) {
   };
 
   const toggleReviewModal = () => {
-    if (username){
+
     setIsReviewModalOpen(!isReviewModalOpen);}
-    else{
-      alert('Please log in to review or edit products.');
-    }
-  };
+   
+      //alert('Please log in to review or edit products.');
+
 
   const handleBackClick = () => {
     const queryParams = {
